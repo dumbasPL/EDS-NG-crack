@@ -6,7 +6,7 @@ android {
     compileSdk = 36
     buildToolsVersion = "36.0.0"
     ndkVersion = "29.0.13113456"
-    namespace = "io.github.vvb2060.TODO"
+    namespace = "cc.nezu.edsngcrack"
     defaultConfig {
         minSdk = 28
         targetSdk = 36
@@ -14,7 +14,7 @@ android {
         versionName = "1.0"
         externalNativeBuild {
             ndkBuild {
-                abiFilters += listOf("arm64-v8a")
+                abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
                 arguments += "-j${Runtime.getRuntime().availableProcessors()}"
             }
         }
@@ -25,7 +25,6 @@ android {
             isShrinkResources = true
             vcsInfo.include = false
             proguardFiles("proguard-rules.pro")
-            signingConfig = signingConfigs["debug"]
         }
     }
     compileOptions {

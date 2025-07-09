@@ -3,15 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:label="@string/app_name"
         android:theme="@android:style/Theme.DeviceDefault"
         tools:ignore="MissingApplicationIcon">
 
+        <meta-data
+            android:name="xposeddescription"
+            android:resource="@string/app_description" />
         <meta-data
             android:name="xposedminversion"
             android:value="82" />
         <meta-data
             android:name="xposedscope"
-            android:value="TODO" />
+            android:value="com.sovworks.projecteds" />
     </application>
 
 </manifest>

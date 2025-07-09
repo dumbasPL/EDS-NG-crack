@@ -1,7 +1,7 @@
 -repackageclasses
 -allowaccessmodification
 
--keep class io.github.vvb2060.xposed.Init {
+-keep class cc.nezu.edsngcrack.Init {
     <init>();
 }
 
