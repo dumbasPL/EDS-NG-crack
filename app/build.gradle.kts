@@ -4,8 +4,8 @@ plugins {
 
 android {
     compileSdk = 36
-    buildToolsVersion = "36.0.0"
-    ndkVersion = "29.0.13113456"
+    buildToolsVersion = "35.0.1"
+    ndkVersion = "28.2.13676358"
     namespace = "cc.nezu.edsngcrack"
     defaultConfig {
         minSdk = 28
