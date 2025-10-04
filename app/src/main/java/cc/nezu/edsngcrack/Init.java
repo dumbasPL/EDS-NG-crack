@@ -16,44 +16,59 @@ public class Init implements IXposedHookLoadPackage {
     private static final String TAG = "edsngcrack";
 
     private static void hook(DexHelper dex) {
+        var mv_toString_arr = dex.findMethodUsingString(
+            "ModuleVersion(moduleId=", false, dex.encodeClassIndex(String.class),
+            (short) 0, null, -1, null, null, null, true);
+        var mv_toString = Arrays.stream(mv_toString_arr)
+                .mapToObj(dex::decodeMethodIndex)
+                .filter(Objects::nonNull)
+                .findFirst();
+        if (!mv_toString.isPresent()) {
+            Log.e(TAG, "Failed to find ModuleVersion.toString");
+            return;
+        }
+        var mv_class = mv_toString.get().getDeclaringClass();
+        Log.d(TAG, "mv_toString: " + mv_toString.get() + " in class " + mv_class);
+
         var arr = dex.findMethodUsingString(
-            "moduleVersion", false, dex.encodeClassIndex(Enum.class),
-            (short) 3, null, -1, null, null, null, true);
+            "call to 'resume' before 'invoke' with coroutine", false, dex.encodeClassIndex(Enum.class),
+            (short) 3, null, -1, null, new long[]{dex.encodeClassIndex(mv_class)}, null, true);
         var getModuleState = Arrays.stream(arr)
                 .mapToObj(dex::decodeMethodIndex)
                 .filter(Objects::nonNull)
                 .findFirst();
-        if (getModuleState.isPresent()) {
-            var method = getModuleState.get();
-            Log.d(TAG, "getModuleState: " + method);
-            XposedBridge.hookMethod(method, new XC_MethodHook() {
-                Enum<?> cachedAvailable = null;
-                Enum<?> cachedNotPurchased = null;
+        if (!getModuleState.isPresent()) {
+            Log.e(TAG, "Failed to find getModuleState");
+            return;
+        }
+        var method = getModuleState.get();
+        Log.d(TAG, "getModuleState: " + method);
 
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) {
-                    var res = (Enum<?>)param.getResult();
-                    if (cachedAvailable == null || cachedNotPurchased == null) {
-                        for (var value : res.getDeclaringClass().getEnumConstants()) {
-                            if (value.name().equals("Available")) {
-                                cachedAvailable = (Enum<?>) value;
-                                Log.d(TAG, "getModuleState: Found Available enum value: " + cachedAvailable.name());
-                            }
-                            if (value.name().equals("NotPurchased")) {
-                                cachedNotPurchased = (Enum<?>) value;
-                                Log.d(TAG, "getModuleState: Found NotPurchased enum value: " + cachedNotPurchased.name());
-                            }
+        XposedBridge.hookMethod(method, new XC_MethodHook() {
+            Enum<?> cachedAvailable = null;
+            Enum<?> cachedNotPurchased = null;
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) {
+                var res = (Enum<?>)param.getResult();
+                if (cachedAvailable == null || cachedNotPurchased == null) {
+                    for (var value : res.getDeclaringClass().getEnumConstants()) {
+                        if (value.name().equals("Available")) {
+                            cachedAvailable = (Enum<?>) value;
+                            Log.d(TAG, "getModuleState: Found Available enum value: " + cachedAvailable.name());
+                        }
+                        if (value.name().equals("NotPurchased")) {
+                            cachedNotPurchased = (Enum<?>) value;
+                            Log.d(TAG, "getModuleState: Found NotPurchased enum value: " + cachedNotPurchased.name());
                         }
                     }
-                    if (cachedAvailable != null && cachedNotPurchased != null && res == cachedNotPurchased) {
-                        Log.d(TAG, "getModuleState: Replacing NotPurchased with Available");
-                        param.setResult(cachedAvailable);
-                    }
                 }
-            });
-        } else {
-            Log.e(TAG, "Failed to find getModuleState");
-        }
+                if (cachedAvailable != null && cachedNotPurchased != null && res == cachedNotPurchased) {
+                    Log.d(TAG, "getModuleState: Replacing NotPurchased with Available");
+                    param.setResult(cachedAvailable);
+                }
+            }
+        });
     }
 
     @Override
